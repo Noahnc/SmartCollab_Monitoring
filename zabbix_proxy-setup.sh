@@ -10,13 +10,14 @@
 
 # Global variables
 ScriptFolderPath="$(dirname -- "$0")"
-ProjectFolderName="smartcollab_monitoring"
+ProjectFolderName="SmartCollab_Monitoring"
 varZabbixServer=$1
-varPSKKey=
+varPSKKey=$(openssl rand -hex 48)
 varContentValid=
 varProxyName=
-varGeneratedKey=
-varMySQLPassword=o
+varMySQLPassword=$(openssl rand -base64 32)
+varZabbixConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
+varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
 
 # Auffangen des Shell Terminator
 trap ctrl_c INT
@@ -46,15 +47,9 @@ Bitte prüfe den Log-Output.\e[39m"
     exit 1
 }
 
-function GetKey() {
-
-    varGeneratedKey=$(openssl rand -base64 32)
-
-}
-
 function secureMySQLInstallation() {
 
-myql --user=root <<_EOF_
+    myql --user=root <<_EOF_
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${1}';
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -103,6 +98,30 @@ EOF
     OK "Login Banner wurde erfolgreich erstellt"
 }
 
+########################################## Script entry point ################################################
+
+echo -e " \e[34m
+             _____     _     _     _         _              _     _         
+            |__  /__ _| |__ | |__ (_)_  __  | |__  _   _   | |__ | |_ ___   
+              / // _  | '_ \| '_ \| \ \/ /  | '_ \| | | |  | '_ \| __/ __|  
+             / /| (_| | |_) | |_) | |>  <   | |_) | |_| |  | |_) | || (__ _ 
+            /____\__,_|_.__/|_.__/|_/_/\_\  |_.__/ \__, |  |_.__/ \__\___(_)
+                                                   |___/
+____________________________________________________________________________________________
+
+Dies ist das Setup Script für btc Zabbix Proxys
+
+\e[39m
+"
+
+# Prüfe ob das Script auf einem Ubuntu System ausgeführt wurde.
+if ! [[ -f /etc/lsb-release ]]; then
+
+    error "btc Zabbix Proxys dürfen nur auf Ubuntu Server installiert werden. Dieses System ist jedoch nicht kompatibel."
+
+fi
+
+# Aufnehmen des Proxynamen
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte einen Namen für den Proxy eingeben."
@@ -114,9 +133,8 @@ while [[ $varContentValid = "false" ]]; do
     fi
 done
 
-
-wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb  || error "Fehler beim abrufen der Zabbix repo"
-dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb  || error "Fehler beim installieren der Zabbix repo"
+wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim abrufen der Zabbix repo"
+dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim installieren der Zabbix repo"
 
 rm zabbix-release_5.4-1+ubuntu20.04_all.deb
 
@@ -125,15 +143,11 @@ apt update || error "Fehler beim aktuallisieren der source list"
 # Installieren der mysql Datenbank
 apt-get install mysql-server -y || error "Fehler beim installieren des mysql server"
 
-# Generiere ein mysql Passwort
-GetKey
-varMySQLPassword=$varGeneratedKey
-
 # setup des mysql server
 secureMySQLInstallation "$varMySQLPassword"
 
 myql --user=root <<_EOF_
-create database zabbix character set utf8 collate utf8_bin;
+create database zabbix_proxy character set utf8 collate utf8_bin;
 create user zabbix@localhost identified by '$varMySQLPassword';
 grant all privileges on zabbix.* to zabbix@localhost;
 quit
@@ -143,12 +157,42 @@ apt install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix 
 
 zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p "$varMySQLPassword" zabbix
 
+# Entfernen von einigen COnfig werten
+sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
+sed -i "/DBUser=zabbix/d" $varZabbixConfigFilePath
 
+# PSK Key in einem File speichern
+cat >$varZabbixPSKFilePath <<EOF
+$varPSKKey
+EOF
 
+chown zabbix:zabbix $varZabbixPSKFilePath
+
+# Bestehende Zabbix Config umbenennen.
+mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
+
+# Neue Zabbix Config erstellen
+cat >$varZabbixConfigFilePath <<EOF
+######################## btc Zabbix Proxy Settings ########################
+Server=$varZabbixServer
+DBUser=zabbix
+DBPassword=$varMySQLPassword
+ProxyMode=0
+TLSConnect=psk
+TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
+TLSPSKIdentity=PSK 001
+
+######################## btc Zabbix Proxy Settings ########################
+
+EOF
+
+# Alte Config an neue anhängen
+cat $varZabbixConfigFilePath.old >>$varZabbixConfigFilePath
+rm $varZabbixConfigFilePath.old
+
+chown zabbix:zabbix $varZabbixConfigFilePath
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
-
-
 
 echo -e " \e[34m
              _____     _     _     _         _              _     _         
