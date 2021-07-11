@@ -13,7 +13,7 @@ varSmartCollabFolder="/etc/SmartCollab_Zabbix/"
 varProjectFolderName="SmartCollab_Monitoring"
 varRemoteScriptName="remote_script.sh"
 varGithubProjectURL="https://github.com/Noahnc/SmartCollab_Monitoring.git"
-varLogFileName=$(date '+%d/%m/%Y_%H:%M:%S').log;
+varLogFileName=$(date '+%d.%m.%Y_%H:%M:%S').log;
 varLogPath="/var/log/SmartCollab_Zabbix/"
 
 function error() {
@@ -32,6 +32,6 @@ git clone $varGithubProjectURL "$varSmartCollabFolder$varProjectFolderName"
 
 
 
-"$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > "$varLogPath/$varLogFileName"
+"$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > "$varLogPath$varLogFileName"
 
 rm -r "$varSmartCollabFolder$varProjectFolderName"
