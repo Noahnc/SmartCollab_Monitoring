@@ -48,7 +48,6 @@ Bitte prüfe den Log-Output.\e[39m"
     exit 1
 }
 
-
 doSQLquery() {
     echo -e "Führe SQL Query aus: " "$1"
     mysql -u root -e "$1" || error "Fehler beim Ausführen des SQL Querry:" "$1"
@@ -192,7 +191,7 @@ OK "SQL Installation erfolgreich abgesichert"
 # Erstellen der Zabbix Datenbank und User
 doSQLquery "create database zabbix_proxy character set utf8 collate utf8_bin;"
 doSQLquery "create user zabbix@localhost identified by '$varMySQLPassword';"
-doSQLquery "grant all privileges on zabbix.* to zabbix@localhost;"
+doSQLquery "grant all privileges on zabbix_proxy.* to zabbix@localhost;"
 OK "Zabbix Datenbank angelegt und konfiguriert"
 
 doSQLquery "FLUSH PRIVILEGES;"
@@ -203,10 +202,11 @@ systemctl enable mysql
 OK "SQL Server neu gestartet"
 
 # Installieren des Zabbix Proxy
-apt install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
+apt-get install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
+apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zabbix SQL Scripts"
 OK "Zabbix Proxy erfolgreich installiert"
 
-zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p "$varMySQLPassword" zabbix
+zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
 
 # Entfernen von einigen Config werten
 sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
