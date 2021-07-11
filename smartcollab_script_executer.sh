@@ -32,6 +32,6 @@ git clone $varGithubProjectURL $varSmartCollabFolder
 
 
 
-"$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > ${$varLogPath/$varLogFileName}
+"$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > "$varLogPath/$varLogFileName"
 
-rm -r ${$varSmartCollabFolder/$varProjectFolderName}
+rm -r "$varSmartCollabFolder/$varProjectFolderName"
