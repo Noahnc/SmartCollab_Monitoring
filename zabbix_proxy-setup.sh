@@ -123,7 +123,7 @@ function CreateSmartCollabEnvironment {
 
 ########################################## Script entry point ################################################
 
-CreateSmartCollabEnvironment
+
 
 echo -e " \e[34m
              _____     _     _     _         _              _     _         
@@ -165,6 +165,10 @@ done
 
 # Setzen der Zeitzone
 timedatectl set-timezone Europe/Zurich
+
+CreateSmartCollabEnvironment || error "Fehler beim erstellen des SmarCollab Environment"
+OK "SmartCollab Environment erstellt"
+
 
 # Konfigurieren der Firewall.
 
@@ -268,6 +272,9 @@ OK "Zabbix Config erfolgreich angelegt"
 service zabbix-proxy restart || error "Fehler beim neustart des Zbbix Proxy Service"
 systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
+
+#Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
+echo "zabbix  ALL=NOPASSWD: $varSmartCollabFolder$varSmartCollabExecuterScript" >> /etc/sudoers
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
