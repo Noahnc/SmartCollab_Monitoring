@@ -50,7 +50,8 @@ Bitte prüfe den Log-Output.\e[39m"
 
 
 doSQLquery() {
-    mysql -u root -e "$1"
+    echoo -e "Führe SQL Query aus: " "$1"
+    mysql -u root -e "$1" || error "Fehler beim Ausführen des SQL Querry:" "$1"
 }
 
 function secureMySQLInstallation() {
@@ -186,20 +187,24 @@ doSQLquery "DELETE FROM mysql.user WHERE User='';"
 doSQLquery "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
 doSQLquery "DROP DATABASE IF EXISTS test;"
 doSQLquery "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
+OK "SQL Installation erfolgreich abgesichert"
 
 # Erstellen der Zabbix Datenbank und User
 doSQLquery "create database zabbix_proxy character set utf8 collate utf8_bin;"
 doSQLquery "create user zabbix@localhost identified by '$varMySQLPassword';"
 doSQLquery "grant all privileges on zabbix.* to zabbix@localhost;"
+OK "Zabbix Datenbank angelegt und konfiguriert"
 
 doSQLquery "FLUSH PRIVILEGES;"
 
 # Neustart des SQL Server und aktivieren des Autostart
 service mysql restart
 systemctl enable mysql
+OK "SQL Server neu gestartet"
 
 # Installieren des Zabbix Proxy
 apt install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
+OK "Zabbix Proxy erfolgreich installiert"
 
 zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p "$varMySQLPassword" zabbix
 
@@ -213,6 +218,7 @@ $varPSKKey
 EOF
 
 chown zabbix:zabbix $varZabbixPSKFilePath
+OK "Zabbix PSK Schlüssel wurde gespeichert"
 
 # Bestehende Zabbix Config umbenennen.
 mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
@@ -235,12 +241,12 @@ EOF
 # Alte Config an neue anhängen
 cat $varZabbixConfigFilePath.old >>$varZabbixConfigFilePath
 rm $varZabbixConfigFilePath.old
-
 chown zabbix:zabbix $varZabbixConfigFilePath
+OK "Zabbix Config erfolgreich angelegt"
 
 service zabbix-proxy restart || error "Fehler beim neustart des Zbbix Proxy Service"
 systemctl enable zabbix-proxy
-
+OK "Zabbix Proxy erfolgreich gestartet"
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
