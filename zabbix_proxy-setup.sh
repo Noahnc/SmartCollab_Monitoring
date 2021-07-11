@@ -9,6 +9,7 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
+varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
 varZabbixServer=$1
@@ -45,6 +46,11 @@ Bitte prüfe den Log-Output.\e[39m"
         rm -r "$ScriptFolderPath"
     fi
     exit 1
+}
+
+
+doSQLquery() {
+    mysql -u root -e "$1"
 }
 
 function secureMySQLInstallation() {
@@ -109,7 +115,12 @@ echo -e " \e[34m
                                                    |___/
 ____________________________________________________________________________________________
 
-Dies ist das Setup Script für btc Zabbix Proxys
+Dies ist das Setup Script für btc Zabbix Proxys.
+Stelle sicher, dass folgende Bedingungen erfüllt sind:
+- NTP ins Internet ist erlaubt.
+- Port TCP 10051 ins Internet ist erlaubt
+
+Du kannst die Ausführung dieses Scripts jederzeit mit Control-C beenden.
 
 \e[39m
 "
@@ -133,31 +144,66 @@ while [[ $varContentValid = "false" ]]; do
     fi
 done
 
+# Setzen der Zeitzone
+timedatectl set-timezone Europe/Zurich
+
+# Konfigurieren der Firewall.
+
+if ! [ -x "$(command -v ufw)" ]; then
+    apt-get install ufw
+    OK "UFW Firewall wurde installiert"
+else
+    OK "UFW Firewall ist bereits installiert"
+fi
+
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22
+ufw allow 10051
+yes | ufw enable
+
 wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim abrufen der Zabbix repo"
 dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim installieren der Zabbix repo"
 
 rm zabbix-release_5.4-1+ubuntu20.04_all.deb
 
+OK "Zabbix Repository erfolgreich in source list eingetragen"
+
 apt update || error "Fehler beim aktuallisieren der source list"
 
 # Installieren der mysql Datenbank
-apt-get install mysql-server -y || error "Fehler beim installieren des mysql server"
+if ! [ -x "$(command -v mysql)" ]; then
+    apt-get install mysql-server -y || error "Fehler beim installieren des MySQL server"
+    OK "MySQL Server erfolgreich installiert"
+else
+    OK "MySQL Server ist bereits installiert"
+fi
 
-# setup des mysql server
-secureMySQLInstallation "$varMySQLPassword"
+# Absichern des MySQL Server
+doSQLquery "ALTER USER 'root'@'localhost' IDENTIFIED BY '$varMySQLPassword';"
+doSQLquery "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE User = 'root';"
+doSQLquery "DELETE FROM mysql.user WHERE User='';"
+doSQLquery "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+doSQLquery "DROP DATABASE IF EXISTS test;"
+doSQLquery "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
 
-myql --user=root <<_EOF_
-create database zabbix_proxy character set utf8 collate utf8_bin;
-create user zabbix@localhost identified by '$varMySQLPassword';
-grant all privileges on zabbix.* to zabbix@localhost;
-quit
-_EOF_
+# Erstellen der Zabbix Datenbank und User
+doSQLquery "create database zabbix_proxy character set utf8 collate utf8_bin;"
+doSQLquery "create user zabbix@localhost identified by '$varMySQLPassword';"
+doSQLquery "grant all privileges on zabbix.* to zabbix@localhost;"
 
+doSQLquery "FLUSH PRIVILEGES;"
+
+# Neustart des SQL Server und aktivieren des Autostart
+service mysql restart
+systemctl enable mysql
+
+# Installieren des Zabbix Proxy
 apt install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
 
 zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p "$varMySQLPassword" zabbix
 
-# Entfernen von einigen COnfig werten
+# Entfernen von einigen Config werten
 sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
 sed -i "/DBUser=zabbix/d" $varZabbixConfigFilePath
 
@@ -192,6 +238,10 @@ rm $varZabbixConfigFilePath.old
 
 chown zabbix:zabbix $varZabbixConfigFilePath
 
+service zabbix-proxy restart || error "Fehler beim neustart des Zbbix Proxy Service"
+systemctl enable zabbix-proxy
+
+
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
 echo -e " \e[34m
@@ -206,7 +256,8 @@ ________________________________________________________________________________
 Dein Zabbix Proxy wurde erfolgreich Installiert!
 Erstelle nun mit folgenden Angaben den Proxy im Zabbix WebPortal.
 
-Proxy Name: 
+Proxy Name: $varProxyName
+Public iP: $varMyPublicIP
 PSK Key: $varPSKKey
 
 Trage ausserdem folgende Angaben im Keeper ein:
