@@ -107,8 +107,12 @@ EOF
 
 function CreateSmartCollabEnvironment {
 
-    if ! [[ -f /etc/SmartCollab_Zabbix ]]; then
+    if ! [[ -d /etc/SmartCollab_Zabbix ]]; then
         mkdir /etc/SmartCollab_Zabbix
+    fi
+
+    if ! [[ -d /var/log/SmartCollab_Zabbix ]]; then
+        mkdir /var/log/SmartCollab_Zabbix
     fi
 
     cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" $varSmartCollabFolder
