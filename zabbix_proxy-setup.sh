@@ -111,7 +111,7 @@ function CreateSmartCollabEnvironment {
         mkdir /etc/SmartCollab_Zabbix
     fi
 
-    cp "$ScriptFolderPath""$varSmartCollabExecuterScript" $varSmartCollabFolder
+    cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" $varSmartCollabFolder
 
     chmod +x "$varSmartCollabFolder""$varSmartCollabExecuterScript"
 
