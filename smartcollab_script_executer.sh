@@ -31,6 +31,7 @@ fi
 git clone $varGithubProjectURL "$varSmartCollabFolder$varProjectFolderName"
 
 
+chmod +x "$varSmartCollabFolder""$varProjectFolderName"/"$varRemoteScriptName"
 
 "$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > "$varLogPath$varLogFileName"
 
