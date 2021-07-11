@@ -9,6 +9,8 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
+varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
+varZabbixRepoFile="zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
@@ -53,24 +55,21 @@ doSQLquery() {
     mysql -u root -e "$1" || error "Fehler beim Ausführen des SQL Querry:" "$1"
 }
 
-function secureMySQLInstallation() {
-
-    myql --user=root <<_EOF_
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${1}';
-DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-DROP DATABASE IF EXISTS test;
-DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
-FLUSH PRIVILEGES;
-quit
-_EOF_
-
-}
-
 function CreateLoginBanner() {
 
     rm -f /etc/motd
-    rm -f /etc/update-motd.d/10-uname
+
+    if ! [[ -f /etc/update-motd.d/10-uname ]]; then
+        rm /etc/update-motd.d/10-uname
+    fi
+
+    if ! [[ -f /etc/update-motd.d/10-uname ]]; then
+        rm /etc/update-motd.d/10-help-text
+    fi
+
+    if ! [[ -f /etc/update-motd.d/50-landscape-sysinfo ]]; then
+        rm /etc/update-motd.d/50-landscape-sysinfo
+    fi
 
     # Erstelle das Logo
     cat >/etc/update-motd.d/00-logo <<EOF
@@ -104,7 +103,21 @@ EOF
     OK "Login Banner wurde erfolgreich erstellt"
 }
 
+function CreateSmartCollabEnvironment {
+
+    if ! [[ -f /etc/SmartCollab_Zabbix ]]; then
+        mkdir /etc/SmartCollab_Zabbix
+    fi
+
+    cp $ScriptFolderPath/"smartcollab_script_executer.sh" /etc/SmartCollab_Zabbix/
+
+    chmod +x /etc/SmartCollab_Zabbix/smartcollab_script_executer.sh
+
+}
+
 ########################################## Script entry point ################################################
+
+CreateSmartCollabEnvironment
 
 echo -e " \e[34m
              _____     _     _     _         _              _     _         
@@ -162,8 +175,8 @@ ufw allow 22
 ufw allow 10051
 yes | ufw enable
 
-wget https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim abrufen der Zabbix repo"
-dpkg -i zabbix-release_5.4-1+ubuntu20.04_all.deb || error "Fehler beim installieren der Zabbix repo"
+wget $varZabbixRepoURL || error "Fehler beim abrufen der Zabbix repo"
+dpkg -i $varZabbixRepoFile || error "Fehler beim installieren der Zabbix repo"
 
 rm zabbix-release_5.4-1+ubuntu20.04_all.deb
 
@@ -206,7 +219,9 @@ apt-get install zabbix-proxy-mysql -y || error "Fehler beim installieren des zab
 apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zabbix SQL Scripts"
 OK "Zabbix Proxy erfolgreich installiert"
 
+# Importieren des Datenbank Schemas
 zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
+OK "Datenbank Schema wurde importiert"
 
 # Entfernen von einigen Config werten
 sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
