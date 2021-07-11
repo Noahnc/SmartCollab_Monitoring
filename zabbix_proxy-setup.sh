@@ -10,7 +10,7 @@
 
 # Global variables
 varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
-varZabbixRepoFile="zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
+varZabbixRepoFile="zabbix-release_5.4-1+ubuntu20.04_all.deb"
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
