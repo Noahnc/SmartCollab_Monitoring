@@ -14,6 +14,8 @@ varZabbixRepoFile="zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
+varSmartCollabFolder="/etc/SmartCollab_Zabbix/"
+varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 48)
 varContentValid=
@@ -109,9 +111,9 @@ function CreateSmartCollabEnvironment {
         mkdir /etc/SmartCollab_Zabbix
     fi
 
-    cp $ScriptFolderPath/"smartcollab_script_executer.sh" /etc/SmartCollab_Zabbix/
+    cp "$ScriptFolderPath""$varSmartCollabExecuterScript" $varSmartCollabFolder
 
-    chmod +x /etc/SmartCollab_Zabbix/smartcollab_script_executer.sh
+    chmod +x "$varSmartCollabFolder""$varSmartCollabExecuterScript"
 
 }
 
@@ -291,3 +293,7 @@ Name: Zabbix Proxy $varProxyName PSK
 Passwort: $varPSKKey
 \e[39m
 "
+
+if [[ $ScriptFolderPath = *"$ProjectFolderName" ]]; then
+    rm -r "$ScriptFolderPath"
+fi
