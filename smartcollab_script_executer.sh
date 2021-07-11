@@ -28,10 +28,10 @@ if ! [ -x "$(command -v git)" ]; then
     apt-get install git
 fi
 
-git clone $varGithubProjectURL $varSmartCollabFolder
+git clone $varGithubProjectURL "$varSmartCollabFolder$varProjectFolderName"
 
 
 
 "$varSmartCollabFolder""$varProjectFolderName"/./"$varRemoteScriptName" > "$varLogPath/$varLogFileName"
 
-rm -r "$varSmartCollabFolder/$varProjectFolderName"
+rm -r "$varSmartCollabFolder$varProjectFolderName"
