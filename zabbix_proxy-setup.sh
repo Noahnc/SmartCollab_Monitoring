@@ -50,7 +50,7 @@ Bitte prüfe den Log-Output.\e[39m"
 
 
 doSQLquery() {
-    echoo -e "Führe SQL Query aus: " "$1"
+    echo -e "Führe SQL Query aus: " "$1"
     mysql -u root -e "$1" || error "Fehler beim Ausführen des SQL Querry:" "$1"
 }
 
@@ -118,8 +118,8 @@ ________________________________________________________________________________
 
 Dies ist das Setup Script für btc Zabbix Proxys.
 Stelle sicher, dass folgende Bedingungen erfüllt sind:
-- NTP ins Internet ist erlaubt.
-- Port TCP 10051 ins Internet ist erlaubt
+- NTP Traffic ins Internet ist geöffnet.
+- Port TCP 10051 ins Internet ist geöffnet.
 
 Du kannst die Ausführung dieses Scripts jederzeit mit Control-C beenden.
 
