@@ -9,12 +9,13 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
-varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+focal_all.deb"
-varZabbixRepoFile="zabbix-release_5.0-1+focal_all.deb"
+varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+focal_all.deb" # Offizieller Zabbix Repo Link
+varZabbxiSQLSchemFile="/usr/share/doc/zabbix-proxy-mysql/create.sql.gz"                                                    # Pfad des Zabbix SQL Schemas für die MySQL Datebnak initialisierung
+varInstallZabbixSQLSchem="false"                                                                                           # Bei manchen Zabbix Releases werden die SQL Schemas nicht mit dem Proxy geliefert und müssen zusätzlich installiert werden. true/false
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
-ProjectFolderName="SmartCollab_Monitoring"
-varSmartCollabFolder="SmartCollab_Zabbix"
+ProjectFolderName="SmartCollab_Monitoring" # Name des Github Projekts
+varSmartCollabFolder="SmartCollab_Zabbix"  # Name des Ordners welcher für die Logs, Configs uws. verwendet wird.
 varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varSmartCollabUpdaterScript="updater_script.sh"
 varZabbixServer=$1
@@ -191,7 +192,8 @@ ufw allow 10051
 yes | ufw enable
 
 wget $varZabbixRepoURL || error "Fehler beim abrufen der Zabbix repo"
-dpkg -i $varZabbixRepoFile || error "Fehler beim installieren der Zabbix repo"
+
+dpkg -i "$(basename "$varZabbixRepoURL")" || error "Fehler beim installieren der Zabbix repo"
 
 rm zabbix-release_5.4-1+ubuntu20.04_all.deb
 
@@ -231,12 +233,16 @@ OK "SQL Server neu gestartet"
 
 # Installieren des Zabbix Proxy
 apt-get install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
-apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zabbix SQL Scripts"
+
+# Bei manchen Zabbix Releases müssen die SQL Schemas manuell installiert werden
+if [[ $varInstallZabbixSQLSchem = "true" ]]; then
+    apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zabbix SQL Scripts"
+fi
 OK "Zabbix Proxy erfolgreich installiert"
 
 # Importieren des Datenbank Schemas
 OK "Importiere Zabbix Datenbank-Schema"
-zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
+zcat "$varZabbxiSQLSchemFile" | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
 OK "Datenbank Schema wurde importiert"
 
 # Entfernen von einigen Config werten
@@ -250,7 +256,7 @@ EOF
 
 chown zabbix:zabbix $varZabbixPSKFilePath || error "Fehler beim setzen der Berechtigungen für den PSK"
 chmod 644 $varZabbixPSKFilePath || error "Fehler beim setzen der Berechtigungen für den PSK"
-OK "Zabbix PSK Schlüssel wurde gespeichert" 
+OK "Zabbix PSK Schlüssel wurde gespeichert"
 
 # Bestehende Zabbix Config umbenennen.
 mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
