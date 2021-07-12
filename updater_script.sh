@@ -14,15 +14,15 @@ varSmartCollabFolder="SmartCollab_Zabbix"
 varLogFileName=autoupdate_$(date '+%d.%m.%Y_%H-%M-%S').log
 
 function error() {
-    echo -e "\e[31m
+    echo -e "
 Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
-Bitte prüfe den Log-Output.\e[39m" &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+Bitte prüfe den Log-Output." &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
     exit 1
 }
 
 function OK() {
-    echo -e "\e[32m$1\e[39m" &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+    echo -e "$1" &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
 }
 
 ########################################## Script entry point ################################################

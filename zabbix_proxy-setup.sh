@@ -20,7 +20,7 @@ varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varSmartCollabUpdaterScript="updater_script.sh"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 256)
-varPSKidentity="PSK_MAIN_001"
+varPSKidentity=
 varContentValid=
 varProxyName=
 varMySQLPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
@@ -169,6 +169,8 @@ while [[ $varContentValid = "false" ]]; do
         echo -e "\e[31mKeine gültige Eingabe!\e[39m"
     fi
 done
+
+varPSKidentity="PSK_MAIN_$varProxyName"
 
 # Setzen der Zeitzone
 timedatectl set-timezone Europe/Zurich
