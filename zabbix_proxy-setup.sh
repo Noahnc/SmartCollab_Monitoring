@@ -9,18 +9,20 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
-varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.4-1+ubuntu20.04_all.deb"
-varZabbixRepoFile="zabbix-release_5.4-1+ubuntu20.04_all.deb"
+varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+focal_all.deb"
+varZabbixRepoFile="zabbix-release_5.0-1+focal_all.deb"
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
 varSmartCollabFolder="SmartCollab_Zabbix"
 varSmartCollabExecuterScript="smartcollab_script_executer.sh"
+varSmartCollabUpdaterScript="updater_script"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 256)
+varPSKidentity="PSK_MAIN_001"
 varContentValid=
 varProxyName=
-varMySQLPassword=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)
+varMySQLPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
 varZabbixConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
 varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
 
@@ -120,8 +122,10 @@ function CreateSmartCollabEnvironment {
     fi
 
     cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" "/usr/bin/$varSmartCollabFolder"
+    cp "$ScriptFolderPath/""$varSmartCollabUpdaterScript" "/usr/bin/$varSmartCollabFolder"
 
     chmod +x "/usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript"
+    chmod +x "/usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript"
 
 }
 
@@ -244,8 +248,9 @@ cat >$varZabbixPSKFilePath <<EOF
 $varPSKKey
 EOF
 
-chown zabbix:zabbix $varZabbixPSKFilePath
-OK "Zabbix PSK Schlüssel wurde gespeichert"
+chown zabbix:zabbix $varZabbixPSKFilePath || error "Fehler beim setzen der Berechtigungen für den PSK"
+chmod 644 $varZabbixPSKFilePath || error "Fehler beim setzen der Berechtigungen für den PSK"
+OK "Zabbix PSK Schlüssel wurde gespeichert" 
 
 # Bestehende Zabbix Config umbenennen.
 mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
@@ -259,7 +264,7 @@ DBPassword=$varMySQLPassword
 ProxyMode=0
 TLSConnect=psk
 TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
-TLSPSKIdentity=PSK 001
+TLSPSKIdentity=$varPSKidentity
 StartVMwareCollectors=5
 EnableRemoteCommands=1
 
@@ -279,6 +284,7 @@ OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
 echo "zabbix ALL=NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript" >>/etc/sudoers
+echo "zabbix ALL=NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript" >>/etc/sudoers
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
@@ -296,7 +302,8 @@ Erstelle nun mit folgenden Angaben den Proxy im Zabbix WebPortal.
 
 Proxy Name:\e[33m $varProxyName\e[34m
 Public iP:\e[33m $varMyPublicIP\e[34m
-256bit PSK Key:\e[33m
+PSK Identity:\e[33m $varPSKidentity\e[34m
+1024bit PSK Key:\e[33m
 $varPSKKey\e[34m
 
 
