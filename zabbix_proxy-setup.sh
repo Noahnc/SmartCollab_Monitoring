@@ -17,10 +17,10 @@ ProjectFolderName="SmartCollab_Monitoring"
 varSmartCollabFolder="SmartCollab_Zabbix"
 varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varZabbixServer=$1
-varPSKKey=$(openssl rand -hex 48)
+varPSKKey=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w64 | head -n1)
 varContentValid=
 varProxyName=
-varMySQLPassword=$(openssl rand -base64 32)
+varMySQLPassword=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)
 varZabbixConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
 varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
 
@@ -293,20 +293,20 @@ ________________________________________________________________________________
 
 Dein Zabbix Proxy wurde erfolgreich Installiert!
 Erstelle nun mit folgenden Angaben den Proxy im Zabbix WebPortal.
-
+\e[33m
 Proxy Name: $varProxyName
 Public iP: $varMyPublicIP
 PSK Key: $varPSKKey
-
+\e[34m
 Trage ausserdem folgende Angaben im Keeper ein:
-
+\e[33m
 Name: Zabbix Proxy mysql root
 User: root
 PW: $varMySQLPassword
 
 Name: Zabbix Proxy $varProxyName PSK
 Passwort: $varPSKKey
-\e[39m
+\e[34m
 "
 
 ########################################## Script end ################################################
