@@ -17,7 +17,7 @@ ProjectFolderName="SmartCollab_Monitoring"
 varSmartCollabFolder="SmartCollab_Zabbix"
 varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varZabbixServer=$1
-varPSKKey=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w64 | head -n1)
+varPSKKey=$(openssl rand -hex 256)
 varContentValid=
 varProxyName=
 varMySQLPassword=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)
@@ -156,9 +156,9 @@ fi
 # Aufnehmen des Proxynamen
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
-    echo "Bitte einen Namen für den Proxy eingeben (Bspw. MusterAG_Aarau). Dieser wird später im Zabbix eingetragen."
+    echo "Bitte einen Namen für den Proxy eingeben (Bspw. MusterAG_Aarau). Dieser wird später im Zabbix eingetragen. (Erlaubte Zeichen: a-z A-Z 0-9 - _)"
     read -r -e -p "Name: " -i "$varProxyName" varProxyName
-    if ! [[ $varProxyName =~ [^a-zA-Z0-9" "] ]]; then
+    if ! [[ $varProxyName =~ [^a-zA-Z0-9_-] ]]; then
         varContentValid="true"
     else
         echo -e "\e[31mKeine gültige Eingabe!\e[39m"
@@ -289,24 +289,29 @@ echo -e " \e[34m
              / /| (_| | |_) | |_) | |>  <   | |_) | |_| |  | |_) | || (__ _ 
             /____\__,_|_.__/|_.__/|_/_/\_\  |_.__/ \__, |  |_.__/ \__\___(_)
                                                    |___/
-____________________________________________________________________________________________
+______________________________________________________________________________________________________________________________________________
 
 Dein Zabbix Proxy wurde erfolgreich Installiert!
 Erstelle nun mit folgenden Angaben den Proxy im Zabbix WebPortal.
-\e[33m
-Proxy Name: $varProxyName
-Public iP: $varMyPublicIP
-PSK Key: $varPSKKey
-\e[34m
-Trage ausserdem folgende Angaben im Keeper ein:
-\e[33m
-Name: Zabbix Proxy mysql root
-User: root
-PW: $varMySQLPassword
 
-Name: Zabbix Proxy $varProxyName PSK
-Passwort: $varPSKKey
+Proxy Name:\e[33m $varProxyName\e[34m
+Public iP:\e[33m $varMyPublicIP\e[34m
+256bit PSK Key:\e[33m
+$varPSKKey\e[34m
+
+
+______________________________________________________________________________________________________________________________________________
+
+Trage ausserdem folgende Angaben im Keeper ein:
+
 \e[34m
+Name:\e[33m Zabbix Proxy mysql root\e[34m
+User:\e[33m root\e[34m
+PW:\e[33m $varMySQLPassword
+\e[34m
+Name:\e[33m Zabbix Proxy $varProxyName PSK\e[34m
+Passwort:\e[33m
+$varPSKKey\e[34m
 "
 
 ########################################## Script end ################################################
