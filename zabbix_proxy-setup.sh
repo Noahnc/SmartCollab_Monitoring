@@ -14,7 +14,7 @@ varZabbixRepoFile="zabbix-release_5.4-1+ubuntu20.04_all.deb"
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring"
-varSmartCollabFolder="/etc/SmartCollab_Zabbix/"
+varSmartCollabFolder="SmartCollab_Zabbix"
 varSmartCollabExecuterScript="smartcollab_script_executer.sh"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 48)
@@ -107,23 +107,25 @@ EOF
 
 function CreateSmartCollabEnvironment {
 
-    if ! [[ -d /etc/SmartCollab_Zabbix ]]; then
-        mkdir /etc/SmartCollab_Zabbix
+    if ! [[ -d /etc/$varSmartCollabFolder ]]; then
+        mkdir /etc/$varSmartCollabFolder
     fi
 
-    if ! [[ -d /var/log/SmartCollab_Zabbix ]]; then
-        mkdir /var/log/SmartCollab_Zabbix
+    if ! [[ -d /var/log/$varSmartCollabFolder ]]; then
+        mkdir /var/log/$varSmartCollabFolder
     fi
 
-    cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" $varSmartCollabFolder
+    if ! [[ -d /usr/bin/$varSmartCollabFolder ]]; then
+        mkdir /usr/bin/$varSmartCollabFolder
+    fi
 
-    chmod +x "$varSmartCollabFolder""$varSmartCollabExecuterScript"
+    cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" "/usr/bin/$varSmartCollabFolder"
+
+    chmod +x "/usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript"
 
 }
 
 ########################################## Script entry point ################################################
-
-
 
 echo -e " \e[34m
              _____     _     _     _         _              _     _         
@@ -168,7 +170,6 @@ timedatectl set-timezone Europe/Zurich
 
 CreateSmartCollabEnvironment || error "Fehler beim erstellen des SmarCollab Environment"
 OK "SmartCollab Environment erstellt"
-
 
 # Konfigurieren der Firewall.
 
@@ -274,7 +275,7 @@ systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-echo "zabbix  ALL=NOPASSWD: $varSmartCollabFolder$varSmartCollabExecuterScript" >> /etc/sudoers
+echo "zabbix  ALL=NOPASSWD: $varSmartCollabFolder$varSmartCollabExecuterScript" >>/etc/sudoers
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
