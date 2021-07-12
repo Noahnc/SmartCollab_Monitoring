@@ -34,11 +34,11 @@ if ! [ -x "$(command -v git)" ]; then
     apt-get install git || error "Fehler beim installieren von git"
 fi
 
-git clone $varGithubProjectURL "/usr/bin/$varSmartCollabFolder/$varProjectFolderName" >> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim Klonen der repo"
+git clone $varGithubProjectURL "/usr/bin/$varSmartCollabFolder/$varProjectFolderName" &>> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim Klonen der repo"
 
-chmod +x "/usr/bin/$varSmartCollabFolder/$varProjectFolderName/$varRemoteScriptName" >> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim setzen der Rechte"
+chmod +x "/usr/bin/$varSmartCollabFolder/$varProjectFolderName/$varRemoteScriptName" &>> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim setzen der Rechte"
 
-"/usr/bin/$varSmartCollabFolder/$varProjectFolderName/./$varRemoteScriptName" >> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim ausführen des Scripts"
+"/usr/bin/$varSmartCollabFolder/$varProjectFolderName/./$varRemoteScriptName" &>> "/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim ausführen des Scripts"
 
 rm -r "/usr/bin/$varSmartCollabFolder/$varProjectFolderName" || error "Fehler beim löschen des remote_script"
 

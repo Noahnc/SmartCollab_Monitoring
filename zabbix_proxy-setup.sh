@@ -231,6 +231,7 @@ apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zab
 OK "Zabbix Proxy erfolgreich installiert"
 
 # Importieren des Datenbank Schemas
+OK "Importiere Zabbix Datenbank-Schema"
 zcat /usr/share/doc/zabbix-sql-scripts/mysql/schema.sql.gz | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
 OK "Datenbank Schema wurde importiert"
 
@@ -307,8 +308,6 @@ Name: Zabbix Proxy $varProxyName PSK
 Passwort: $varPSKKey
 \e[39m
 "
-
-
 
 ########################################## Script end ################################################
 
