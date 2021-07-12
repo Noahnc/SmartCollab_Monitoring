@@ -24,7 +24,7 @@ function error() {
     echo -e "\e[31m
 Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
-Bitte prüfe den Log-Output.\e[39m"  >> "/var/log/$varSmartCollabFolder/$varLogFileName"
+Bitte prüfe den Log-Output.\e[39m"  &>> "/var/log/$varSmartCollabFolder/$varLogFileName"
     exit 1
 }
 
