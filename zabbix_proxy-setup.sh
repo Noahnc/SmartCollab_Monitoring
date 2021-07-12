@@ -251,7 +251,7 @@ mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
 
 # Neue Zabbix Config erstellen
 cat >$varZabbixConfigFilePath <<EOF
-######################## btc Zabbix Proxy Settings ########################
+######################## btc Zabbix Proxy Settings start ########################
 Server=$varZabbixServer
 DBUser=zabbix
 DBPassword=$varMySQLPassword
@@ -259,8 +259,10 @@ ProxyMode=0
 TLSConnect=psk
 TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
 TLSPSKIdentity=PSK 001
+StartVMwareCollectors=5
+EnableRemoteCommands=1
 
-######################## btc Zabbix Proxy Settings ########################
+######################## btc Zabbix Proxy Settings end ########################
 
 EOF
 
@@ -275,7 +277,7 @@ systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-echo "zabbix  ALL=NOPASSWD: $varSmartCollabFolder$varSmartCollabExecuterScript" >>/etc/sudoers
+echo "zabbix  ALL=NOPASSWD: usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript" >>/etc/sudoers
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
