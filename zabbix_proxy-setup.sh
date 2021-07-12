@@ -156,7 +156,7 @@ fi
 # Aufnehmen des Proxynamen
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
-    echo "Bitte einen Namen für den Proxy eingeben."
+    echo "Bitte einen Namen für den Proxy eingeben (Bspw. MusterAG_Aarau). Dieser wird später im Zabbix eingetragen."
     read -r -e -p "Name: " -i "$varProxyName" varProxyName
     if ! [[ $varProxyName =~ [^a-zA-Z0-9" "] ]]; then
         varContentValid="true"
