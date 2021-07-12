@@ -308,6 +308,11 @@ Passwort: $varPSKKey
 \e[39m
 "
 
+
+
+########################################## Script end ################################################
+
+# Löschen des Projekt Ordners
 if [[ $ScriptFolderPath = *"$ProjectFolderName" ]]; then
     rm -r "$ScriptFolderPath"
 fi
