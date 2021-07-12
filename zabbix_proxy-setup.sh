@@ -278,7 +278,7 @@ systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-echo "zabbix  ALL=NOPASSWD: usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript" >>/etc/sudoers
+echo "zabbix ALL=NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript" >>/etc/sudoers
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
