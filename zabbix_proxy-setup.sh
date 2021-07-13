@@ -332,6 +332,11 @@ PSK Identity:\e[33m $varPSKidentity\e[34m
 1024bit PSK Key:\e[33m
 $varPSKKey\e[34m
 
+Erstelle ausserdem einen neuen Host mit folgenden Angaben:
+
+Host name:\e[33m $varProxyName\e[34m
+Groups:\e[33m Zabbix-proxys\e[34m
+Templates:\e[33m Zabbix-proxys\e[34m
 
 ______________________________________________________________________________________________________________________________________________
 
