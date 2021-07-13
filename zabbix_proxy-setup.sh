@@ -10,7 +10,7 @@
 
 # Global variables
 varZabbixRepoURL="https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+focal_all.deb" # Offizieller Zabbix Repo Link
-varZabbxiSQLSchemFile="/usr/share/doc/zabbix-proxy-mysql/create.sql.gz"                                                    # Pfad des Zabbix SQL Schemas für die MySQL Datebnak initialisierung
+varZabbxiSQLSchemFile="/usr/share/doc/zabbix-proxy-mysql/schema.sql.gz"                                                    # Pfad des Zabbix SQL Schemas für die MySQL Datebnak initialisierung
 varInstallZabbixSQLSchem="false"                                                                                           # Bei manchen Zabbix Releases werden die SQL Schemas nicht mit dem Proxy geliefert und müssen zusätzlich installiert werden. true/false
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
@@ -244,12 +244,13 @@ OK "Zabbix Proxy erfolgreich installiert"
 
 # Importieren des Datenbank Schemas
 OK "Importiere Zabbix Datenbank-Schema"
-zcat "$varZabbxiSQLSchemFile" | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy
+zcat "$varZabbxiSQLSchemFile" | mysql -uzabbix -p"$varMySQLPassword" zabbix_proxy || error "Fehler beim importieren des SQL Schemas"
 OK "Datenbank Schema wurde importiert"
 
 # Entfernen von einigen Config werten
 sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
 sed -i "/DBUser=zabbix/d" $varZabbixConfigFilePath
+sed -i "/Hostname=Zabbix proxy/d" $varZabbixConfigFilePath
 
 # PSK Key in einem File speichern
 cat >$varZabbixPSKFilePath <<EOF
@@ -267,6 +268,7 @@ mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
 cat >$varZabbixConfigFilePath <<EOF
 ######################## btc Zabbix Proxy Settings start ########################
 Server=$varZabbixServer
+Hostname=$varProxyName
 DBUser=zabbix
 DBPassword=$varMySQLPassword
 ProxyMode=0
