@@ -24,7 +24,8 @@ varPSKidentity=
 varContentValid=
 varProxyName=
 varMySQLPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
-varZabbixConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
+varZabbixProxyConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
+varZabbixAgentConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
 varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
 
 # Auffangen des Shell Terminator
@@ -95,6 +96,7 @@ EOF
 echo -e " \e[34m
 Proxy Name:      $1
 Zabbix Server:   $varZabbixServer
+Public iP:       \$(curl ipinfo.io/ip)
 Datum:           \$( date )
 OS:              \$( lsb_release -a 2>&1 | grep  'Description' | cut -f2 )
 Uptime:          \$( uptime -p )
@@ -236,6 +238,9 @@ OK "SQL Server neu gestartet"
 # Installieren des Zabbix Proxy
 apt-get install zabbix-proxy-mysql -y || error "Fehler beim installieren des zabbix proxy"
 
+# Installieren des Zabbix Agent
+apt-get install zabbix-agent -y || error "Fehler beim installieren des zabbix agent"
+
 # Bei manchen Zabbix Releases müssen die SQL Schemas manuell installiert werden
 if [[ $varInstallZabbixSQLSchem = "true" ]]; then
     apt-get install zabbix-sql-scripts -y || error "Fehler beim installieren der Zabbix SQL Scripts"
@@ -248,9 +253,12 @@ zcat "$varZabbxiSQLSchemFile" | mysql -uzabbix -p"$varMySQLPassword" zabbix_prox
 OK "Datenbank Schema wurde importiert"
 
 # Entfernen von einigen Config werten
-sed -i "/Server=127.0.0.1/d" $varZabbixConfigFilePath
-sed -i "/DBUser=zabbix/d" $varZabbixConfigFilePath
-sed -i "/Hostname=Zabbix proxy/d" $varZabbixConfigFilePath
+sed -i "/Server=127.0.0.1/d" $varZabbixProxyConfigFilePath
+sed -i "/DBUser=zabbix/d" $varZabbixProxyConfigFilePath
+sed -i "/Hostname=Zabbix proxy/d" $varZabbixProxyConfigFilePath
+
+sed -i "/ServerActive=127.0.0.1/d" $varZabbixAgentConfigFilePath
+sed -i "/Hostname=Zabbix server/d" $varZabbixAgentConfigFilePath
 
 # PSK Key in einem File speichern
 cat >$varZabbixPSKFilePath <<EOF
@@ -262,10 +270,10 @@ chmod 644 $varZabbixPSKFilePath || error "Fehler beim setzen der Berechtigungen 
 OK "Zabbix PSK Schlüssel wurde gespeichert"
 
 # Bestehende Zabbix Config umbenennen.
-mv $varZabbixConfigFilePath $varZabbixConfigFilePath.old
+mv $varZabbixProxyConfigFilePath $varZabbixProxyConfigFilePath.old
 
 # Neue Zabbix Config erstellen
-cat >$varZabbixConfigFilePath <<EOF
+cat >$varZabbixProxyConfigFilePath <<EOF
 ######################## btc Zabbix Proxy Settings start ########################
 Server=$varZabbixServer
 Hostname=$varProxyName
@@ -283,9 +291,9 @@ EnableRemoteCommands=1
 EOF
 
 # Alte Config an neue anhängen
-cat $varZabbixConfigFilePath.old >>$varZabbixConfigFilePath
-rm $varZabbixConfigFilePath.old
-chown zabbix:zabbix $varZabbixConfigFilePath
+cat $varZabbixProxyConfigFilePath.old >>$varZabbixProxyConfigFilePath
+rm $varZabbixProxyConfigFilePath.old
+chown zabbix:zabbix $varZabbixProxyConfigFilePath
 OK "Zabbix Config erfolgreich angelegt"
 
 service zabbix-proxy restart || error "Fehler beim neustart des Zbbix Proxy Service"
