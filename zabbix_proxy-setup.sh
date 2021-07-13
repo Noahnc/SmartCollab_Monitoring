@@ -306,7 +306,7 @@ systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-cat >/etc/sudoers/Zabbix_remote_script_permissions <<EOF
+cat >/etc/sudoers.d/zabbix-script-permissions <<EOF
 zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript
 zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript
 EOF
