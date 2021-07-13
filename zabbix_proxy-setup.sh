@@ -25,7 +25,7 @@ varContentValid=
 varProxyName=
 varMySQLPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
 varZabbixProxyConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
-varZabbixAgentConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
+varZabbixAgentConfigFilePath="/etc/zabbix/zabbix_agentd.conf"
 varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
 
 # Auffangen des Shell Terminator
@@ -164,13 +164,15 @@ fi
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte einen Namen für den Proxy eingeben (Bspw. MusterAG_Aarau). Dieser wird später im Zabbix eingetragen. (Erlaubte Zeichen: a-z A-Z 0-9 - _)"
-    read -r -e -p "Name: " -i "$varProxyName" varProxyName
+    read -r -e -p "Proxy-" -i "$varProxyName" varProxyName
     if ! [[ $varProxyName =~ [^a-zA-Z0-9_-] ]]; then
         varContentValid="true"
     else
         echo -e "\e[31mKeine gültige Eingabe!\e[39m"
     fi
 done
+
+varProxyName="Proxy-$varProxyName"
 
 varPSKidentity="PSK_MAIN_$varProxyName"
 
@@ -285,6 +287,8 @@ TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
 TLSPSKIdentity=$varPSKidentity
 StartVMwareCollectors=5
 EnableRemoteCommands=1
+LogRemoteCommands=1
+ConfigFrequency=360
 
 ######################## btc Zabbix Proxy Settings end ########################
 
