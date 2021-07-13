@@ -18,7 +18,7 @@
 
 echo "Test"
 
-apt-get install zabbix-agent -y
+
 
 
 

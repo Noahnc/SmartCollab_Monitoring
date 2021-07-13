@@ -289,6 +289,7 @@ StartVMwareCollectors=5
 EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
+StartPingers=6
 
 ######################## btc Zabbix Proxy Settings end ########################
 
@@ -305,8 +306,11 @@ systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
 
 #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-echo "zabbix ALL=NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript" >>/etc/sudoers
-echo "zabbix ALL=NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript" >>/etc/sudoers
+cat >/etc/sudoers/Zabbix_remote_script_permissions <<EOF
+zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript
+zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript
+EOF
+
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
