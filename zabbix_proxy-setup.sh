@@ -178,8 +178,8 @@ done
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte den Namen des Standorts eintragen. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
-    read -r -e -p "Proxy-$varCustomerName-" -i "$varCustomerName" varCustomerName
-    if ! [[ $varCustomerName =~ [^a-zA-Z0-9_] ]]; then
+    read -r -e -p "Proxy-$varLocation-" -i "$varLocation" varLocation
+    if ! [[ $varLocation =~ [^a-zA-Z0-9_] ]]; then
         varContentValid="true"
     else
         echo -e "\e[31mKeine gültige Eingabe!\e[39m"
