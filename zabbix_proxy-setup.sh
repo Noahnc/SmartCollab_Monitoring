@@ -343,11 +343,12 @@ ________________________________________________________________________________
 Trage ausserdem folgende Angaben im Keeper ein:
 
 \e[34m
-Name:\e[33m Zabbix Proxy mysql root\e[34m
-User:\e[33m root\e[34m
-PW:\e[33m $varMySQLPassword
+Titel:\e[33m Zabbix Proxy mysql root\e[34m
+Anmelden:\e[33m root\e[34m
+Passwort:\e[33m $varMySQLPassword
 \e[34m
-Name:\e[33m Zabbix Proxy $varProxyName PSK\e[34m
+Titel:\e[33m Zabbix Proxy $varProxyName PSK\e[34m
+Anmelden:\e[33m $varPSKidentity\e[34m
 Passwort:\e[33m
 $varPSKKey\e[34m
 "
