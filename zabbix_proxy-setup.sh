@@ -24,6 +24,7 @@ varPSKidentity=
 varContentValid=
 varProxyName=
 varMySQLPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
+varRootPassword=$(tr -cd '[:alnum:]' </dev/urandom | fold -w30 | head -n1)
 varZabbixProxyConfigFilePath="/etc/zabbix/zabbix_proxy.conf"
 varZabbixAgentConfigFilePath="/etc/zabbix/zabbix_agentd.conf"
 varZabbixPSKFilePath="/etc/zabbix/zabbix_proxy.psk"
@@ -132,6 +133,23 @@ function CreateSmartCollabEnvironment {
 
 }
 
+function SetupFirewall {
+
+    if ! [ -x "$(command -v ufw)" ]; then
+        apt-get install ufw
+        OK "UFW Firewall wurde installiert"
+    else
+        OK "UFW Firewall ist bereits installiert"
+    fi
+
+    ufw default deny incoming
+    ufw default allow outgoing
+    ufw allow 22
+    ufw allow 10051
+    yes | ufw enable
+
+}
+
 ########################################## Script entry point ################################################
 
 echo -e " \e[34m
@@ -165,7 +183,7 @@ varLocation=
 varCustomerName=
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
-    echo "Bitte den Namen des Kunden eingeben. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
+    echo "Bitte den Namen des Kunden eingeben. Bspw. MusterAG (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
     read -r -e -p "Proxy-" -i "$varCustomerName" varCustomerName
     if ! [[ $varCustomerName =~ [^a-zA-Z0-9_-] ]]; then
         varContentValid="true"
@@ -177,7 +195,7 @@ done
 # Aufnehmen des Standorts
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
-    echo "Bitte den Namen des Standorts eintragen. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
+    echo "Bitte den Namen des Standorts eintragen. Bspw. Daettwil (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
     read -r -e -p "Proxy-$varCustomerName-" -i "$varLocation" varLocation
     if ! [[ $varLocation =~ [^a-zA-Z0-9_] ]]; then
         varContentValid="true"
@@ -193,29 +211,19 @@ varPSKidentity="PSK_MAIN_$varProxyName"
 # Setzen der Zeitzone
 timedatectl set-timezone Europe/Zurich
 
+
 CreateSmartCollabEnvironment || error "Fehler beim erstellen des SmarCollab Environment"
 OK "SmartCollab Environment erstellt"
 
 # Konfigurieren der Firewall.
+SetupFirewall
 
-if ! [ -x "$(command -v ufw)" ]; then
-    apt-get install ufw
-    OK "UFW Firewall wurde installiert"
-else
-    OK "UFW Firewall ist bereits installiert"
-fi
-
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow 22
-ufw allow 10051
-yes | ufw enable
-
+# Herunterladen der Zabbix repo
 wget $varZabbixRepoURL || error "Fehler beim abrufen der Zabbix repo"
 
 dpkg -i "$(basename "$varZabbixRepoURL")" || error "Fehler beim installieren der Zabbix repo"
 
-rm zabbix-release_5.4-1+ubuntu20.04_all.deb
+rm "$(basename "$varZabbixRepoURL")"
 
 OK "Zabbix Repository erfolgreich in source list eingetragen"
 
@@ -326,6 +334,9 @@ zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecute
 zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript
 EOF
 
+# Aktivieren des root ssh Login
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || error "Fehler beim aktivieren des SSH root Zugriffs."
+echo -e "$varRootPassword\n$varRootPassword" | passwd root || "Fehler beim setzen des root Passwort"
 
 CreateLoginBanner "$varProxyName" || error "Fehler beim erstellen des Login Banners"
 
@@ -358,9 +369,9 @@ ________________________________________________________________________________
 Trage ausserdem folgende Angaben im Keeper ein:
 
 \e[34m
-Titel:\e[33m Zabbix Proxy mysql root\e[34m
+Titel:\e[33m Zabbix $varProxyName SSH Login\e[34m
 Anmelden:\e[33m root\e[34m
-Passwort:\e[33m $varMySQLPassword
+Passwort:\e[33m $varRootPassword
 \e[34m
 Titel:\e[33m Zabbix Proxy $varProxyName PSK\e[34m
 Anmelden:\e[33m $varPSKidentity\e[34m
