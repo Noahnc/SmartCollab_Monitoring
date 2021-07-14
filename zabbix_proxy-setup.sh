@@ -160,19 +160,33 @@ if ! [[ -f /etc/lsb-release ]]; then
 
 fi
 
-# Aufnehmen des Proxynamen
+# Aufnehmen des Kundennames
+varLocation=
+varCustomerName=
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
-    echo "Bitte einen Namen für den Proxy eingeben (Bspw. MusterAG_Aarau). Dieser wird später im Zabbix eingetragen. (Erlaubte Zeichen: a-z A-Z 0-9 - _)"
-    read -r -e -p "Proxy-" -i "$varProxyName" varProxyName
-    if ! [[ $varProxyName =~ [^a-zA-Z0-9_-] ]]; then
+    echo "Bitte den Namen des Kunden eingeben. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
+    read -r -e -p "Proxy-" -i "$varCustomerName" varCustomerName
+    if ! [[ $varCustomerName =~ [^a-zA-Z0-9_-] ]]; then
         varContentValid="true"
     else
         echo -e "\e[31mKeine gültige Eingabe!\e[39m"
     fi
 done
 
-varProxyName="Proxy-$varProxyName"
+# Aufnehmen des Standorts
+varContentValid="false"
+while [[ $varContentValid = "false" ]]; do
+    echo "Bitte den Namen des Standorts eintragen. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
+    read -r -e -p "Proxy-$varCustomerName-" -i "$varCustomerName" varCustomerName
+    if ! [[ $varCustomerName =~ [^a-zA-Z0-9_] ]]; then
+        varContentValid="true"
+    else
+        echo -e "\e[31mKeine gültige Eingabe!\e[39m"
+    fi
+done
+
+varProxyName="Proxy-$varCustomerName-$varLocation"
 
 varPSKidentity="PSK_MAIN_$varProxyName"
 
