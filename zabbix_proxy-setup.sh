@@ -290,6 +290,7 @@ EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
+StartSNMPTrapper=1
 
 ######################## btc Zabbix Proxy Settings end ########################
 
