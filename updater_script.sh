@@ -18,11 +18,17 @@ function error() {
 Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
 Bitte prüfe den Log-Output." &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+
+echo  "Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
+$1
+Bitte prüfe den Log-Output."
+
     exit 1
 }
 
 function OK() {
     echo -e "$1" &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+    echo "$1"
 }
 
 ########################################## Script entry point ################################################
