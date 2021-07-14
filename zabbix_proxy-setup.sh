@@ -178,7 +178,7 @@ done
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte den Namen des Standorts eintragen. (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
-    read -r -e -p "Proxy-$varLocation-" -i "$varLocation" varLocation
+    read -r -e -p "Proxy-$varCustomerName-" -i "$varLocation" varLocation
     if ! [[ $varLocation =~ [^a-zA-Z0-9_] ]]; then
         varContentValid="true"
     else
