@@ -24,11 +24,17 @@ function error() {
 Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
 Bitte prüfe den Log-Output." &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+
+echo "Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
+$1
+Bitte prüfe den Log-Output."
+
     exit 1
 }
 
 function OK() {
     echo -e "$1" &>>"/var/log/$varSmartCollabFolder/$varLogFileName"
+    echo "$1" 
 }
 
 ########################################## Script entry point ################################################
@@ -38,11 +44,14 @@ if ! [ -x "$(command -v git)" ]; then
 fi
 
 git clone $varGithubProjectURL "/usr/bin/$varSmartCollabFolder/$varProjectFolderName" &>>"/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim Klonen der repo"
+OK "Repo geladen"
 
 chmod +x "/usr/bin/$varSmartCollabFolder/$varProjectFolderName/$varRemoteScriptName" &>>"/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim setzen der Rechte"
 
+OK "Führe das geladene Script aus:"
 "/usr/bin/$varSmartCollabFolder/$varProjectFolderName/./$varRemoteScriptName" &>>"/var/log/$varSmartCollabFolder/$varLogFileName" || error "Fehler beim ausführen des Scripts"
 
 rm -r "/usr/bin/$varSmartCollabFolder/$varProjectFolderName" || error "Fehler beim löschen des remote_script"
+OK "Ausführung abgeschlossen"
 
 ########################################## Script end #########################################################
