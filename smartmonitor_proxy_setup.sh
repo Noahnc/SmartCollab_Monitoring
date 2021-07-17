@@ -4,7 +4,7 @@
 #         Copyright © by Noah Canadea | All rights reserved
 ########################################################################
 #                           Description
-#       Bash Script zum erstellen von btc Zabbix Proxys
+#       Bash Script zum erstellen von SmartMonitor Zabbix Proxys
 #
 #                    Version 1.0 | 13.07.2021
 
@@ -15,9 +15,10 @@ varInstallZabbixSQLSchem="false"                                                
 varMyPublicIP=$(curl ipinfo.io/ip)
 ScriptFolderPath="$(dirname -- "$0")"
 ProjectFolderName="SmartCollab_Monitoring" # Name des Github Projekts
-varSmartCollabFolder="SmartCollab_Zabbix"  # Name des Ordners welcher für die Logs, Configs uws. verwendet wird.
-varSmartCollabExecuterScript="smartcollab_script_executer.sh"
-varSmartCollabUpdaterScript="updater_script.sh"
+varSmartMonitorFolder="SmartMonitor"       # Name des Ordners welcher für die Logs, Configs uws. verwendet wird.
+varSmartMonitorExecuterScript="smartmonitor_proxy_script_executer.sh"
+varSmartMonitorPackageUpdaterScript="smartmonitor_package_updater.sh"
+varSmartMonitorZabbixUpdaterScript="smartmonitor_zabbix_proxy_updater"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 256)
 varPSKidentity=
@@ -111,25 +112,46 @@ EOF
     OK "Login Banner wurde erfolgreich erstellt"
 }
 
-function CreateSmartCollabEnvironment {
+function CreateSmartMonitorProxyEnvironment {
 
-    if ! [[ -d /etc/$varSmartCollabFolder ]]; then
-        mkdir /etc/$varSmartCollabFolder
+    if ! [[ -d /etc/$varSmartMonitorFolder ]]; then
+        mkdir /etc/$varSmartMonitorFolder
     fi
 
-    if ! [[ -d /var/log/$varSmartCollabFolder ]]; then
-        mkdir /var/log/$varSmartCollabFolder
+    if ! [[ -d /var/log/$varSmartMonitorFolder ]]; then
+        mkdir /var/log/$varSmartMonitorFolder
     fi
 
-    if ! [[ -d /usr/bin/$varSmartCollabFolder ]]; then
-        mkdir /usr/bin/$varSmartCollabFolder
+    if ! [[ -d /usr/bin/$varSmartMonitorFolder ]]; then
+        mkdir /usr/bin/$varSmartMonitorFolder
     fi
 
-    cp "$ScriptFolderPath/""$varSmartCollabExecuterScript" "/usr/bin/$varSmartCollabFolder"
-    cp "$ScriptFolderPath/""$varSmartCollabUpdaterScript" "/usr/bin/$varSmartCollabFolder"
+    cp "$ScriptFolderPath/""$varSmartMonitorExecuterScript" "/usr/bin/$varSmartMonitorFolder"
+    cp "$ScriptFolderPath/""$varSmartMonitorZabbixUpdaterScript" "/usr/bin/$varSmartMonitorFolder"
+    cp "$ScriptFolderPath/""$varSmartMonitorPackageUpdaterScript" "/usr/bin/$varSmartMonitorFolder"
 
-    chmod +x "/usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript"
-    chmod +x "/usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript"
+    chown root:root "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorExecuterScript"
+    chown root:root "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorZabbixUpdaterScript"
+    chown root:root "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorPackageUpdaterScript"
+
+    chmod 600 "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorExecuterScript"
+    chmod 600 "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorZabbixUpdaterScript"
+    chmod 600 "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorPackageUpdaterScript"
+
+    chmod +x "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorExecuterScript"
+    chmod +x "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorZabbixUpdaterScript"
+    chmod +x "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorPackageUpdaterScript"
+
+    if ! [[ -f /etc/sudoers.d/zabbix-script-permissions ]]; then
+        rm /etc/sudoers.d/zabbix-script-permissions
+    fi
+
+    #Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
+    cat >/etc/sudoers.d/zabbix-script-permissions <<EOF
+zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartMonitorFolder/$varSmartMonitorExecuterScript
+zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartMonitorFolder/$varSmartMonitorPackageUpdaterScript
+zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartMonitorFolder/$varSmartMonitorZabbixUpdaterScript
+EOF
 
 }
 
@@ -211,9 +233,8 @@ varPSKidentity="PSK_MAIN_$varProxyName"
 # Setzen der Zeitzone
 timedatectl set-timezone Europe/Zurich
 
-
-CreateSmartCollabEnvironment || error "Fehler beim erstellen des SmarCollab Environment"
-OK "SmartCollab Environment erstellt"
+CreateSmartMonitorProxyEnvironment || error "Fehler beim erstellen des SmartMonitor Environment"
+OK "SmartMonitor Environment erstellt"
 
 # Konfigurieren der Firewall.
 SetupFirewall
@@ -312,7 +333,6 @@ EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
-StartSNMPTrapper=1
 
 ######################## btc Zabbix Proxy Settings end ########################
 
@@ -327,12 +347,6 @@ OK "Zabbix Config erfolgreich angelegt"
 service zabbix-proxy restart || error "Fehler beim neustart des Zbbix Proxy Service"
 systemctl enable zabbix-proxy
 OK "Zabbix Proxy erfolgreich gestartet"
-
-#Zabbix User Sudo Recht für smartcollab_script_executer.sh geben
-cat >/etc/sudoers.d/zabbix-script-permissions <<EOF
-zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabExecuterScript
-zabbix ALL=(ALL) NOPASSWD: /usr/bin/$varSmartCollabFolder/$varSmartCollabUpdaterScript
-EOF
 
 # Aktivieren des root ssh Login
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || error "Fehler beim aktivieren des SSH root Zugriffs."

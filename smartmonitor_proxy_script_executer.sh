@@ -15,7 +15,7 @@
 # Global variables
 varSmartCollabFolder="SmartCollab_Zabbix"
 varProjectFolderName="SmartCollab_Monitoring"
-varRemoteScriptName="remote_script.sh"
+varRemoteScriptName="smartmonitor_proxy_remote_script.sh"
 varGithubProjectURL="https://github.com/Noahnc/SmartCollab_Monitoring.git"
 varLogFileName=script_executer_$(date '+%d.%m.%Y_%H-%M-%S').log
 
