@@ -65,17 +65,15 @@ doSQLquery() {
 
 function CreateLoginBanner() {
 
-    rm -f /etc/motd
+    if [[ -f /etc/motd ]]; then
+        rm -f /etc/motd
+    fi
 
-    if ! [[ -f /etc/update-motd.d/10-uname ]]; then
+    if [[ -f /etc/update-motd.d/10-uname ]]; then
         rm /etc/update-motd.d/10-uname
     fi
 
-    if ! [[ -f /etc/update-motd.d/10-uname ]]; then
-        rm /etc/update-motd.d/10-help-text
-    fi
-
-    if ! [[ -f /etc/update-motd.d/50-landscape-sysinfo ]]; then
+    if [[ -f /etc/update-motd.d/50-landscape-sysinfo ]]; then
         rm /etc/update-motd.d/50-landscape-sysinfo
     fi
 
