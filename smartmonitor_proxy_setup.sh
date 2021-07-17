@@ -206,7 +206,7 @@ varCustomerName=
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte den Namen des Kunden eingeben. Bspw. MusterAG (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
-    read -r -e -p "Proxy-" -i "$varCustomerName" varCustomerName
+    read -r -e -p "Firma: " -i "$varCustomerName" varCustomerName
     if ! [[ $varCustomerName =~ [^a-zA-Z0-9_-] ]]; then
         varContentValid="true"
     else
@@ -218,7 +218,7 @@ done
 varContentValid="false"
 while [[ $varContentValid = "false" ]]; do
     echo "Bitte den Namen des Standorts eintragen. Bspw. Daettwil (Erlaubte Zeichen: a-z A-Z 0-9 _ )"
-    read -r -e -p "Proxy-$varCustomerName-" -i "$varLocation" varLocation
+    read -r -e -p "$varCustomerName-Proxy-" -i "$varLocation" varLocation
     if ! [[ $varLocation =~ [^a-zA-Z0-9_] ]]; then
         varContentValid="true"
     else
@@ -226,7 +226,7 @@ while [[ $varContentValid = "false" ]]; do
     fi
 done
 
-varProxyName="Proxy-$varCustomerName-$varLocation"
+varProxyName="$varCustomerName-Proxy-$varLocation"
 
 varPSKidentity="PSK_MAIN_$varProxyName"
 
@@ -333,6 +333,7 @@ EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
+Timeout=10
 
 ######################## btc Zabbix Proxy Settings end ########################
 
