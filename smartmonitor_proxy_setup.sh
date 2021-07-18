@@ -18,7 +18,7 @@ ProjectFolderName="SmartCollab_Monitoring" # Name des Github Projekts
 varSmartMonitorFolder="SmartMonitor"       # Name des Ordners welcher für die Logs, Configs uws. verwendet wird.
 varSmartMonitorExecuterScript="smartmonitor_proxy_script_executer.sh"
 varSmartMonitorPackageUpdaterScript="smartmonitor_package_updater.sh"
-varSmartMonitorZabbixUpdaterScript="smartmonitor_zabbix_proxy_updater"
+varSmartMonitorZabbixUpdaterScript="smartmonitor_zabbix_proxy_updater.sh"
 varZabbixServer=$1
 varPSKKey=$(openssl rand -hex 256)
 varPSKidentity=
@@ -140,7 +140,7 @@ function CreateSmartMonitorProxyEnvironment {
     chmod +x "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorZabbixUpdaterScript"
     chmod +x "/usr/bin/$varSmartMonitorFolder/$varSmartMonitorPackageUpdaterScript"
 
-    if ! [[ -f /etc/sudoers.d/zabbix-script-permissions ]]; then
+    if [[ -f /etc/sudoers.d/zabbix-script-permissions ]]; then
         rm /etc/sudoers.d/zabbix-script-permissions
     fi
 
@@ -332,6 +332,7 @@ LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
 Timeout=10
+StartSNMPTrapper=1
 
 ######################## btc Zabbix Proxy Settings end ########################
 
