@@ -13,7 +13,7 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
-varSmartCollabFolder="SmartCollab_Zabbix"
+varSmartCollabFolder="SmartMonitor"
 varProjectFolderName="SmartCollab_Monitoring"
 varRemoteScriptName="smartmonitor_proxy_remote_script.sh"
 varGithubProjectURL="https://github.com/Noahnc/SmartCollab_Monitoring.git"

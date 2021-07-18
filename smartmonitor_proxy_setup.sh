@@ -166,6 +166,7 @@ function SetupFirewall {
     ufw default allow outgoing
     ufw allow 22
     ufw allow 10051
+    ufw allow 162
     yes | ufw enable
 
 }
@@ -375,7 +376,7 @@ $varPSKKey\e[34m
 Erstelle ausserdem einen neuen Host mit folgenden Angaben:
 
 Host name:\e[33m $varProxyName\e[34m
-Groups:\e[33m Zabbix-proxys\e[34m
+Groups:\e[33m Device_Zabbix-proxys\e[34m
 Templates:\e[33m Zabbix-proxys\e[34m
 
 ______________________________________________________________________________________________________________________________________________

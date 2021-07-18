@@ -33,10 +33,10 @@ function OK() {
 
 ########################################## Script entry point ################################################
 
-service zabbix-proxy stop error "Fehler beim stop des Proxy service"
+service zabbix-proxy stop &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim stop des Proxy service"
 
 # Alte source löschen
-rm -Rf /etc/apt/sources.list.d/zabbix.list "Alte Source List konnte nicht gelöscht werden"
+dpkg --purge zabbix-release
 
 # Herunterladen der Zabbix repo
 wget "$varZabbixRepoURL" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim herunterladen der neuen repo"
@@ -61,8 +61,8 @@ service zabbix-proxy start &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" 
 
 # Prüfen on ein neustart des Systems notwendig
 if [ -f /var/run/reboot-required ]; then
-    OK "Zum anwenden aller Updates wird das System nun neu gestartet"
-    reboot &>>"/var/log/$varSmartMonitorFolder/$varLogFileName"
+    OK "Zum anwenden aller Updates, wird das System in einer Minute neu gestartet"
+    shutdown -r &>>"/var/log/$varSmartMonitorFolder/$varLogFileName"
 fi
 
 ############################################# Script end ######################################################

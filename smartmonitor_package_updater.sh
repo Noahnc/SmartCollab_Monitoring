@@ -10,7 +10,7 @@
 #                    Version 1.0 | 13.07.2021
 
 # Global variables
-varSmartMonitorFolder="SmartCollab_Zabbix"
+varSmartMonitorFolder="SmartMonitor"
 varLogFileName=autoupdate_$(date '+%d.%m.%Y_%H-%M-%S').log
 
 function error() {
