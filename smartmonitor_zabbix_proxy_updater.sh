@@ -36,13 +36,13 @@ function OK() {
 service zabbix-proxy stop &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim stop des Proxy service"
 
 # Alte source löschen
-dpkg --purge zabbix-release
+rm -Rf /etc/apt/sources.list.d/zabbix.list
 
 # Herunterladen der Zabbix repo
 wget "$varZabbixRepoURL" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim herunterladen der neuen repo"
 
 # Neue Repo in source eintragen
-dpkg -i "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim entpacken der Repo)"
+DEBIAN_FRONTEND=noninteractive dpkg -i "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim entpacken der Repo)"
 rm "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim löschen von $(basename "$varZabbixRepoURL")"
 OK "Zabbix Repository erfolgreich in source list eingetragen"
 
@@ -51,7 +51,7 @@ apt-get update &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fe
 OK "Neue repo installiert"
 
 # Alle Updates Installieren
-apt-get install --only-upgrade zabbix-proxy-mysql -y &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
+DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade zabbix-proxy-mysql -yapt-get install --only-upgrade zabbix-proxy-mysql -y &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
 OK "Upgrades erfolgreich installiert"
 
 # Nicht mehr benötigte Pakete entfernen
