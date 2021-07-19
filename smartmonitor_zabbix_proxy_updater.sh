@@ -38,7 +38,7 @@ service zabbix-proxy stop &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" |
 
 # Alte source löschen
 rm /etc/apt/sources.list.d/zabbix.list
-dpkg --purge zabbix-version
+dpkg --purge zabbix-release
 
 # Herunterladen der Zabbix repo
 wget "$varZabbixRepoURL" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim herunterladen der neuen repo"
@@ -53,7 +53,7 @@ apt-get update &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fe
 OK "Neue repo installiert"
 
 # Alle Updates Installieren
-DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade zabbix-proxy-mysql -yapt-get install --only-upgrade zabbix-proxy-mysql -y &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
+apt-get install --only-upgrade zabbix-proxy-mysql -y --assume-no &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
 OK "Upgrades erfolgreich installiert"
 
 # Nicht mehr benötigte Pakete entfernen
