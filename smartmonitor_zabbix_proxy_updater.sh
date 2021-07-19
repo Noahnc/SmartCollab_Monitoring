@@ -34,6 +34,7 @@ function OK() {
 
 ########################################## Script entry point ################################################
 
+OK "Zabbix Proxy Service wird nun gestopt"
 service zabbix-proxy stop &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim stop des Proxy service"
 
 # Alte source löschen
