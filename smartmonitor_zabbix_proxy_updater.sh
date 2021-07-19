@@ -17,7 +17,8 @@ function error() {
     echo -e "
 Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
-Bitte prüfe den Log-Output." &>>"/var/log/$varSmartMonitorFolder/$varLogFileName"
+Bitte prüfe den Log-Output:
+/var/log/$varSmartMonitorFolder/$varLogFileName" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName"
 
 echo  "Fehler beim ausführen des Scripts, folgender Vorgang ist fehlgeschlagen:
 $1
@@ -36,13 +37,14 @@ function OK() {
 service zabbix-proxy stop &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim stop des Proxy service"
 
 # Alte source löschen
-rm -Rf /etc/apt/sources.list.d/zabbix.list
+rm /etc/apt/sources.list.d/zabbix.list
+dpkg --purge zabbix-version
 
 # Herunterladen der Zabbix repo
 wget "$varZabbixRepoURL" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim herunterladen der neuen repo"
 
 # Neue Repo in source eintragen
-DEBIAN_FRONTEND=noninteractive dpkg -i "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim entpacken der Repo)"
+dpkg -i "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim entpacken der Repo)"
 rm "$(basename "$varZabbixRepoURL")" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim löschen von $(basename "$varZabbixRepoURL")"
 OK "Zabbix Repository erfolgreich in source list eingetragen"
 
