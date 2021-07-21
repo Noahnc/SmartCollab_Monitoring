@@ -54,7 +54,7 @@ apt-get update &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fe
 OK "Neue repo installiert"
 
 # Alle Updates Installieren
-DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade zabbix-proxy-mysql -y -o Dpkg::Options::="--force-confold" &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
+apt-get -o Dpkg::Options::="--force-confold" install --only-upgrade zabbix-proxy-mysql &>>"/var/log/$varSmartMonitorFolder/$varLogFileName" || error "Fehler beim Upgrade des Proxy"
 OK "Upgrades erfolgreich installiert"
 
 # Nicht mehr benötigte Pakete entfernen
