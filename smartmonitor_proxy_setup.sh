@@ -329,11 +329,12 @@ TLSConnect=psk
 TLSPSKFile=/etc/zabbix/zabbix_proxy.psk
 TLSPSKIdentity=$varPSKidentity
 StartVMwareCollectors=5
+StartPollers=20
 EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
-Timeout=14
+Timeout=12
 StartSNMPTrapper=1
 
 ######################## btc Zabbix Proxy Settings end ########################
