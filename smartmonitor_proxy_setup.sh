@@ -300,9 +300,9 @@ OK "Datenbank Schema wurde importiert"
 sed -i "/Server=127.0.0.1/d" $varZabbixProxyConfigFilePath
 sed -i "/DBUser=zabbix/d" $varZabbixProxyConfigFilePath
 sed -i "/Hostname=Zabbix proxy/d" $varZabbixProxyConfigFilePath
-
 sed -i "/ServerActive=127.0.0.1/d" $varZabbixAgentConfigFilePath
 sed -i "/Hostname=Zabbix server/d" $varZabbixAgentConfigFilePath
+sed -i "/Timeout=3/d" $varZabbixAgentConfigFilePath
 
 # PSK Key in einem File speichern
 cat >$varZabbixPSKFilePath <<EOF
@@ -332,7 +332,7 @@ EnableRemoteCommands=1
 LogRemoteCommands=1
 ConfigFrequency=360
 StartPingers=6
-Timeout=10
+Timeout=14
 StartSNMPTrapper=1
 
 ######################## btc Zabbix Proxy Settings end ########################
