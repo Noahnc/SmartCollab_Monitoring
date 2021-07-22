@@ -99,6 +99,7 @@ Zabbix Server:   $varZabbixServer
 Public iP:       \$(curl ipinfo.io/ip)
 Datum:           \$( date )
 OS:              \$( lsb_release -a 2>&1 | grep  'Description' | cut -f2 )
+Zabbix Version:  \$( apt-cache policy zabbix-proxy-mysql | grep "Installed" | cut -d ":" -f3 )
 Uptime:          \$( uptime -p )
 \e[39m
 "        
