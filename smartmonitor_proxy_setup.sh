@@ -275,6 +275,9 @@ OK "Zabbix Datenbank angelegt und konfiguriert"
 
 doSQLquery "FLUSH PRIVILEGES;"
 
+# Setzen des Log Ablaufdatums
+echo "binlog_expire_logs_seconds=3600" >>"/etc/mysql/conf.d/mysql.cnf"
+
 # Neustart des SQL Server und aktivieren des Autostart
 service mysql restart
 systemctl enable mysql
