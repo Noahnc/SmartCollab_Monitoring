@@ -267,6 +267,10 @@ doSQLquery "DROP DATABASE IF EXISTS test;"
 doSQLquery "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
 OK "SQL Installation erfolgreich abgesichert"
 
+# Setzen des Log Ablaufdatums
+doSQLquery "SET GLOBAL binlog_expire_logs_seconds=86400;"
+
+
 # Erstellen der Zabbix Datenbank und User
 doSQLquery "create database zabbix_proxy character set utf8 collate utf8_bin;"
 doSQLquery "create user zabbix@localhost identified by '$varMySQLPassword';"
@@ -274,9 +278,6 @@ doSQLquery "grant all privileges on zabbix_proxy.* to zabbix@localhost;"
 OK "Zabbix Datenbank angelegt und konfiguriert"
 
 doSQLquery "FLUSH PRIVILEGES;"
-
-# Setzen des Log Ablaufdatums
-echo "binlog_expire_logs_seconds=3600" >>"/etc/mysql/conf.d/mysql.cnf"
 
 # Neustart des SQL Server und aktivieren des Autostart
 service mysql restart
