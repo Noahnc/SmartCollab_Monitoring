@@ -239,6 +239,9 @@ OK "SmartMonitor Environment erstellt"
 # Konfigurieren der Firewall.
 SetupFirewall
 
+# Setzen einer max Grösse der journal Logs
+journalctl --vacuum-size=250M
+
 # Herunterladen der Zabbix repo
 wget $varZabbixRepoURL || error "Fehler beim abrufen der Zabbix repo"
 
